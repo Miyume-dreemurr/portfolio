@@ -199,12 +199,84 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Miyume Dev - Ready with custom Discord status!');
 });
     // ========== VISITOR VIEW COUNTER ==========
-    fetch('https://api.countapi.xyz/hit/miyume/views')
-        .then(res => res.json())
-        .then(data => {
-            const count = data.value;
-            document.getElementById('viewCountDisplay').innerText = count.toLocaleString();
-        })
-        .catch(() => {
-            document.getElementById('viewCountDisplay').innerText = '1,234';
+const BIN_ID = '69cdae5636566621a86ef47d';
+const API_KEY = '$2a$10$Lm70n4XiSLFnhJJY5UVqV.P/DnDAPEGMxI.k8EsW5t3KzWzX4voNi';
+
+// Function to update display
+function updateDisplay(count) {
+    // Look for any element containing "total views" text
+    const elements = document.querySelectorAll('*');
+    for (let element of elements) {
+        if (element.textContent && element.textContent.includes('total views')) {
+            // Replace the number with the new count
+            element.textContent = element.textContent.replace(/\d+/, count);
+            break;
+        }
+    }
+    console.log(`Global views: ${count}`); // For debugging
+}
+
+// Main function to increment global counter
+async function incrementGlobalCounter() {
+    try {
+        // Get current count
+        const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+            headers: {
+                'X-Master-Key': API_KEY
+            }
         });
+        const data = await getResponse.json();
+        let currentCount = data.record.views || 0;
+        
+        // Increment count
+        const newCount = currentCount + 1;
+        
+        // Update the bin
+        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': API_KEY
+            },
+            body: JSON.stringify({ views: newCount })
+        });
+        
+        // Update display
+        updateDisplay(newCount);
+        
+    } catch (error) {
+        console.error('Counter error:', error);
+        // Fallback to localStorage if API fails
+        let fallback = localStorage.getItem('fallback_views') || 0;
+        fallback = parseInt(fallback) + 1;
+        localStorage.setItem('fallback_views', fallback);
+        updateDisplay(fallback);
+    }
+}
+
+// Function to just fetch and display current count (without incrementing)
+async function displayCurrentCount() {
+    try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+            headers: { 'X-Master-Key': API_KEY }
+        });
+        const data = await response.json();
+        updateDisplay(data.record.views || 0);
+    } catch (error) {
+        console.error('Failed to fetch count:', error);
+        const fallback = localStorage.getItem('fallback_views') || 0;
+        updateDisplay(fallback);
+    }
+}
+
+// Check if this is a new session to prevent counting refreshes
+const hasVisited = sessionStorage.getItem('global_visited');
+
+if (!hasVisited) {
+    // First visit in this session - increment counter
+    incrementGlobalCounter();
+    sessionStorage.setItem('global_visited', 'true');
+} else {
+    // Returning to page in same session - just display current count
+    displayCurrentCount();
+}
