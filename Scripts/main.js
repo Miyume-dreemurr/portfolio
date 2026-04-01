@@ -199,70 +199,77 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Miyume Dev - Ready with custom Discord status!');
 });
     // ========== VISITOR VIEW COUNTER ==========
-async function updateGlobalViewCounter() {
+  async function updateGlobalViewCounter() {
         const viewDisplay = document.getElementById('viewCountDisplay');
         if (!viewDisplay) return;
         
-        const sessionCounted = sessionStorage.getItem('miyume_global_counted');
+        // Show loading state
+        viewDisplay.textContent = '...';
         
-        // Try to get the global count from API
+        // Check if this device/session has been counted
+        const deviceCounted = localStorage.getItem('miyume_device_counted');
+        const sessionCounted = sessionStorage.getItem('miyume_session_counted');
+        
         try {
             let response;
             
-            if (!sessionCounted) {
-                // First visit - increment
-                response = await fetch('https://api.countapi.xyz/hit/miyume-portfolio/visits');
-                sessionStorage.setItem('miyume_global_counted', 'true');
+            // Only increment if this device has NEVER been counted before
+            if (!deviceCounted) {
+                // New device! Increment global counter
+                response = await fetch('https://api.countapi.xyz/update/miyume-portfolio/visits/?amount=1');
+                localStorage.setItem('miyume_device_counted', 'true');
+                sessionStorage.setItem('miyume_session_counted', 'true');
             } else {
-                // Just get current count
+                // Already counted device - just get current count
                 response = await fetch('https://api.countapi.xyz/get/miyume-portfolio/visits');
             }
             
             const data = await response.json();
             const count = data.value;
             
-            // Store the latest global count locally
-            localStorage.setItem('miyume_global_count', count);
+            // Update display
             viewDisplay.textContent = count.toLocaleString();
             
+            // Store the real global count
+            localStorage.setItem('miyume_real_count', count);
+            
         } catch (error) {
-            // Phone can't reach API - use the last known global count
-            const savedCount = localStorage.getItem('miyume_global_count');
+            console.log('API error, using fallback');
             
-            if (savedCount) {
-                // Show the same number PC was showing
-                viewDisplay.textContent = parseInt(savedCount).toLocaleString();
+            // Use the REAL global count from localStorage if available
+            let realCount = localStorage.getItem('miyume_real_count');
+            
+            if (!realCount) {
+                // First time ever on this device
+                realCount = 848;
+                localStorage.setItem('miyume_real_count', realCount);
             } else {
-                // Fallback - but try to fetch again
-                viewDisplay.textContent = '848';
-                localStorage.setItem('miyume_global_count', 848);
+                realCount = parseInt(realCount);
             }
             
-            // Still try to count this phone as a new visitor
-            if (!localStorage.getItem('miyume_phone_counted')) {
-                // This phone hasn't been counted yet
-                localStorage.setItem('miyume_phone_counted', 'true');
-                // We'll increment when API works again
+            // Check if this device needs to be counted
+            if (!localStorage.getItem('miyume_device_counted')) {
+                // This device hasn't been counted yet - increment the global count
+                realCount++;
+                localStorage.setItem('miyume_real_count', realCount);
+                localStorage.setItem('miyume_device_counted', 'true');
             }
+            
+            viewDisplay.textContent = realCount.toLocaleString();
         }
     }
     
+    // Run on every page load
     updateGlobalViewCounter();
     
-    // Retry on phone when network is better
-    setTimeout(() => {
-        const viewDisplay = document.getElementById('viewCountDisplay');
-        if (viewDisplay && viewDisplay.textContent === '848') {
-            // Try again to sync with real count
-            fetch('https://api.countapi.xyz/get/miyume-portfolio/visits')
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.value) {
-                        viewDisplay.textContent = data.value.toLocaleString();
-                        localStorage.setItem('miyume_global_count', data.value);
-                    }
-                })
-                .catch(() => {});
+    // When phone comes online, sync with real API
+    window.addEventListener('online', function() {
+        updateGlobalViewCounter();
+    });
+    
+    // Also sync when page becomes visible again
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            updateGlobalViewCounter();
         }
-    }, 3000);
-
+    });
