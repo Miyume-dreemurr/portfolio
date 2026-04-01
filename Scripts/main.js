@@ -199,56 +199,48 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Miyume Dev - Ready with custom Discord status!');
 });
     // ========== VISITOR VIEW COUNTER ==========
- async function updateGlobalViewCounter() {
+     function updateGlobalViewCounter() {
         const viewDisplay = document.getElementById('viewCountDisplay');
         if (!viewDisplay) return;
         
-        const repo = 'miyume-dreemurr/portfolio';
+        // Get current count
+        let count = localStorage.getItem('miyume_total_views');
+        
+        if (!count) {
+            // First time ever - start at 1,000
+            count = 1000;
+            localStorage.setItem('miyume_total_views', count);
+        } else {
+            count = parseInt(count);
+        }
+        
+        // Check if this device has been counted
         const deviceCounted = localStorage.getItem('miyume_device_counted');
         
-        try {
-            // Using GitHub API to count views via issues (reliable on GitHub Pages)
-            let count;
-            
-            if (!deviceCounted) {
-                // First visit - increment
-                const response = await fetch(`https://api.countapi.xyz/update/miyume-portfolio/views/?amount=1`, {
-                    method: 'GET'
-                });
-                const data = await response.json();
-                count = data.value;
-                localStorage.setItem('miyume_device_counted', 'true');
-            } else {
-                // Get current count
-                const response = await fetch(`https://api.countapi.xyz/get/miyume-portfolio/views`);
-                const data = await response.json();
-                count = data.value;
-            }
-            
-            if (count) {
-                viewDisplay.textContent = count.toLocaleString();
-            } else {
-                throw new Error('No count');
-            }
-            
-        } catch (error) {
-            console.log('API error, using fallback');
-            // Fallback that increments once per device
-            let count = localStorage.getItem('miyume_fallback_count');
-            
-            if (!count) {
-                count = 247;
-                localStorage.setItem('miyume_fallback_count', count);
-            }
-            
-            if (!localStorage.getItem('miyume_device_counted_fallback')) {
-                count = parseInt(count) + 1;
-                localStorage.setItem('miyume_fallback_count', count);
-                localStorage.setItem('miyume_device_counted_fallback', 'true');
-            }
-            
-            viewDisplay.textContent = parseInt(count).toLocaleString();
+        if (!deviceCounted) {
+            // New device - increment by 1
+            count++;
+            localStorage.setItem('miyume_total_views', count);
+            localStorage.setItem('miyume_device_counted', 'true');
         }
+        
+        // Display the count
+        viewDisplay.textContent = count.toLocaleString();
+        
+        // Try to sync with a free API in background (optional, doesn't break display)
+        fetch('https://api.countapi.xyz/hit/miyume-portfolio/views')
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.value && data.value > count) {
+                    // If API has higher count, use that
+                    viewDisplay.textContent = data.value.toLocaleString();
+                    localStorage.setItem('miyume_total_views', data.value);
+                }
+            })
+            .catch(() => {
+                // API failed, but we already have a number showing
+                console.log('API offline, using local count');
+            });
     }
     
     updateGlobalViewCounter();
