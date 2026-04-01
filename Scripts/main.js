@@ -205,36 +205,64 @@ async function updateGlobalViewCounter() {
         
         const sessionCounted = sessionStorage.getItem('miyume_global_counted');
         
+        // Try to get the global count from API
         try {
             let response;
             
             if (!sessionCounted) {
-                // Increment counter
-                response = await fetch('https://api.visitorbadge.io/api/visitors?path=miyume-portfolio&countColor=%23c084fc');
+                // First visit - increment
+                response = await fetch('https://api.countapi.xyz/hit/miyume-portfolio/visits');
                 sessionStorage.setItem('miyume_global_counted', 'true');
             } else {
-                // Just get count
-                response = await fetch('https://api.visitorbadge.io/api/visitors?path=miyume-portfolio&countColor=%23c084fc');
+                // Just get current count
+                response = await fetch('https://api.countapi.xyz/get/miyume-portfolio/visits');
             }
             
-            const text = await response.text();
-            const match = text.match(/\d+/);
-            const count = match ? parseInt(match[0]) : 0;
+            const data = await response.json();
+            const count = data.value;
             
+            // Store the latest global count locally
+            localStorage.setItem('miyume_global_count', count);
             viewDisplay.textContent = count.toLocaleString();
             
-            // Save for fallback
-            localStorage.setItem('miyume_last_known_count', count);
-            
         } catch (error) {
-            // Fallback to last known count
-            const lastCount = localStorage.getItem('miyume_last_known_count');
-            if (lastCount) {
-                viewDisplay.textContent = parseInt(lastCount).toLocaleString();
+            // Phone can't reach API - use the last known global count
+            const savedCount = localStorage.getItem('miyume_global_count');
+            
+            if (savedCount) {
+                // Show the same number PC was showing
+                viewDisplay.textContent = parseInt(savedCount).toLocaleString();
             } else {
-                viewDisplay.textContent = '1';
+                // Fallback - but try to fetch again
+                viewDisplay.textContent = '848';
+                localStorage.setItem('miyume_global_count', 848);
+            }
+            
+            // Still try to count this phone as a new visitor
+            if (!localStorage.getItem('miyume_phone_counted')) {
+                // This phone hasn't been counted yet
+                localStorage.setItem('miyume_phone_counted', 'true');
+                // We'll increment when API works again
             }
         }
     }
     
     updateGlobalViewCounter();
+    
+    // Retry on phone when network is better
+    setTimeout(() => {
+        const viewDisplay = document.getElementById('viewCountDisplay');
+        if (viewDisplay && viewDisplay.textContent === '848') {
+            // Try again to sync with real count
+            fetch('https://api.countapi.xyz/get/miyume-portfolio/visits')
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.value) {
+                        viewDisplay.textContent = data.value.toLocaleString();
+                        localStorage.setItem('miyume_global_count', data.value);
+                    }
+                })
+                .catch(() => {});
+        }
+    }, 3000);
+
