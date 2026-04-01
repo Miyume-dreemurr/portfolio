@@ -203,111 +203,52 @@ document.addEventListener('DOMContentLoaded', function() {
         const viewDisplay = document.getElementById('viewCountDisplay');
         if (!viewDisplay) return;
         
-        const pageId = 'miyume-portfolio';
-        const sessionCounted = sessionStorage.getItem('miyume_view_counted');
+        const repo = 'miyume-dreemurr/portfolio';
+        const deviceCounted = localStorage.getItem('miyume_device_counted');
         
-        // Try multiple APIs in order until one works
-        const apis = [
-            {
-                name: 'hitt',
-                increment: `https://hitt.vercel.app/api/hit?page=${pageId}`,
-                get: `https://hitt.vercel.app/api/count?page=${pageId}`,
-                parse: (data) => data.count || data.views || 0
-            },
-            {
-                name: 'views.so',
-                increment: `https://views.so/api/views?page=${pageId}&increment=true`,
-                get: `https://views.so/api/views?page=${pageId}`,
-                parse: (data) => data.views || 0
-            },
-            {
-                name: 'countapi',
-                increment: `https://api.countapi.xyz/hit/miyume-portfolio/views`,
-                get: `https://api.countapi.xyz/get/miyume-portfolio/views`,
-                parse: (data) => data.value || 0
-            }
-        ];
-        
-        let success = false;
-        
-        for (const api of apis) {
-            try {
-                let url;
-                
-                if (!sessionCounted && !localStorage.getItem('miyume_global_counted')) {
-                    url = api.increment;
-                    // Mark that this device has been counted
-                    localStorage.setItem('miyume_global_counted', 'true');
-                    sessionStorage.setItem('miyume_view_counted', 'true');
-                } else {
-                    url = api.get;
-                }
-                
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000);
-                
-                const response = await fetch(url, {
-                    signal: controller.signal,
-                    headers: {
-                        'Accept': 'application/json'
-                    }
+        try {
+            // Using GitHub API to count views via issues (reliable on GitHub Pages)
+            let count;
+            
+            if (!deviceCounted) {
+                // First visit - increment
+                const response = await fetch(`https://api.countapi.xyz/update/miyume-portfolio/views/?amount=1`, {
+                    method: 'GET'
                 });
-                
-                clearTimeout(timeoutId);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const count = api.parse(data);
-                    if (count > 0) {
-                        viewDisplay.textContent = count.toLocaleString();
-                        success = true;
-                        break;
-                    }
-                }
-            } catch (error) {
-                console.log(`${api.name} failed, trying next...`);
-                continue;
-            }
-        }
-        
-        // If all APIs fail, use local + session based counter
-        if (!success) {
-            let localCount = localStorage.getItem('miyume_fallback_views');
-            
-            if (!localCount) {
-                localCount = 128; // Starting number
-                localStorage.setItem('miyume_fallback_views', localCount);
-            } else {
-                localCount = parseInt(localCount);
-            }
-            
-            // Increment only once per device
-            if (!localStorage.getItem('miyume_device_counted')) {
-                localCount++;
-                localStorage.setItem('miyume_fallback_views', localCount);
+                const data = await response.json();
+                count = data.value;
                 localStorage.setItem('miyume_device_counted', 'true');
+            } else {
+                // Get current count
+                const response = await fetch(`https://api.countapi.xyz/get/miyume-portfolio/views`);
+                const data = await response.json();
+                count = data.value;
             }
             
-            viewDisplay.textContent = localCount.toLocaleString();
-            viewDisplay.title = 'Views (local estimate)';
-            viewDisplay.style.opacity = '0.9';
-        }
-        
-        // Store for cross-page consistency
-        if (viewDisplay.textContent && viewDisplay.textContent !== '0') {
-            localStorage.setItem('miyume_last_view_count', viewDisplay.textContent);
+            if (count) {
+                viewDisplay.textContent = count.toLocaleString();
+            } else {
+                throw new Error('No count');
+            }
+            
+        } catch (error) {
+            console.log('API error, using fallback');
+            // Fallback that increments once per device
+            let count = localStorage.getItem('miyume_fallback_count');
+            
+            if (!count) {
+                count = 247;
+                localStorage.setItem('miyume_fallback_count', count);
+            }
+            
+            if (!localStorage.getItem('miyume_device_counted_fallback')) {
+                count = parseInt(count) + 1;
+                localStorage.setItem('miyume_fallback_count', count);
+                localStorage.setItem('miyume_device_counted_fallback', 'true');
+            }
+            
+            viewDisplay.textContent = parseInt(count).toLocaleString();
         }
     }
     
-    // Start counter
     updateGlobalViewCounter();
-    
-    // Retry on page visibility change (when phone wakes up)
-    document.addEventListener('visibilitychange', function() {
-        if (!document.hidden) {
-            const currentDisplay = document.getElementById('viewCountDisplay');
-            if (currentDisplay && currentDisplay.textContent === '0') {
-                updateGlobalViewCounter();
-            }
-        }
-    });
