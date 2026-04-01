@@ -199,40 +199,41 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Miyume Dev - Ready with custom Discord status!');
 });
     // ========== VISITOR VIEW COUNTER ==========
- async function updateGlobalViewCounter() {
+async function updateGlobalViewCounter() {
         const viewDisplay = document.getElementById('viewCountDisplay');
         if (!viewDisplay) return;
         
-        // Check if this session has been counted
         const sessionCounted = sessionStorage.getItem('miyume_global_counted');
         
         try {
-            let url;
+            let response;
             
             if (!sessionCounted) {
-                // First time this session - increment global counter
-                url = 'https://api.countapi.xyz/hit/miyume-portfolio/visits';
+                // Increment counter
+                response = await fetch('https://api.visitorbadge.io/api/visitors?path=miyume-portfolio&countColor=%23c084fc');
                 sessionStorage.setItem('miyume_global_counted', 'true');
             } else {
-                // Just get current count
-                url = 'https://api.countapi.xyz/get/miyume-portfolio/visits';
+                // Just get count
+                response = await fetch('https://api.visitorbadge.io/api/visitors?path=miyume-portfolio&countColor=%23c084fc');
             }
             
-            const response = await fetch(url);
-            const data = await response.json();
-            const count = data.value;
+            const text = await response.text();
+            const match = text.match(/\d+/);
+            const count = match ? parseInt(match[0]) : 0;
             
             viewDisplay.textContent = count.toLocaleString();
             
+            // Save for fallback
+            localStorage.setItem('miyume_last_known_count', count);
+            
         } catch (error) {
-            // If API fails, show last known count or placeholder
+            // Fallback to last known count
             const lastCount = localStorage.getItem('miyume_last_known_count');
             if (lastCount) {
                 viewDisplay.textContent = parseInt(lastCount).toLocaleString();
             } else {
-                viewDisplay.textContent = '★';
+                viewDisplay.textContent = '1';
             }
-            viewDisplay.title = 'Refresh to update';
         }
     }
     
