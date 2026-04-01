@@ -202,19 +202,36 @@ document.addEventListener('DOMContentLoaded', function() {
 const BIN_ID = '69cdae5636566621a86ef47d';
 const API_KEY = '$2a$10$Lm70n4XiSLFnhJJY5UVqV.P/DnDAPEGMxI.k8EsW5t3KzWzX4voNi';
 
-// Function to update display
+// Function to update ONLY the view counter
 function updateDisplay(count) {
-    // Look for any element containing "total views" text
-    const elements = document.querySelectorAll('*');
+    // Find the exact element that contains "total views"
+    const elements = document.querySelectorAll('p, div, span, h1, h2, h3, h4, h5, h6');
+    
     for (let element of elements) {
+        // Check if this element contains "total views" AND is likely the counter
         if (element.textContent && element.textContent.includes('total views')) {
-            // Replace the number with the new count
-            element.textContent = element.textContent.replace(/\d+/, count);
-            break;
+            // Only modify if it's exactly "total views X" or similar
+            const originalText = element.textContent;
+            if (originalText.match(/total views \d+/)) {
+                element.textContent = originalText.replace(/\d+/, count);
+                break;
+            }
         }
     }
-    console.log(`Global views: ${count}`); // For debugging
+    
+    console.log(`Global views: ${count}`);
 }
+
+// Alternative: Target by class if you know the class name
+// If your counter has a specific class like "view-count", use this instead:
+/*
+function updateDisplay(count) {
+    const counterElement = document.querySelector('.view-count, .total-views, [class*="view"]');
+    if (counterElement) {
+        counterElement.textContent = counterElement.textContent.replace(/\d+/, count);
+    }
+}
+*/
 
 // Main function to increment global counter
 async function incrementGlobalCounter() {
@@ -254,7 +271,7 @@ async function incrementGlobalCounter() {
     }
 }
 
-// Function to just fetch and display current count (without incrementing)
+// Function to just fetch and display current count
 async function displayCurrentCount() {
     try {
         const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
@@ -269,14 +286,12 @@ async function displayCurrentCount() {
     }
 }
 
-// Check if this is a new session to prevent counting refreshes
+// Check if this is a new session
 const hasVisited = sessionStorage.getItem('global_visited');
 
 if (!hasVisited) {
-    // First visit in this session - increment counter
     incrementGlobalCounter();
     sessionStorage.setItem('global_visited', 'true');
 } else {
-    // Returning to page in same session - just display current count
     displayCurrentCount();
 }
