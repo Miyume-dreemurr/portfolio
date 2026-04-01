@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miyume Dev | Pricing</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Styles/main.css">
+    <link rel="stylesheet" href="Styles/pricing.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <a href="index.html" class="logo">
+                <i class="fas fa-star-of-life"></i> MIYUME <span style="color: var(--primary);">DEV</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html"> Home </a>
+                <a href="page2.html"> Gallery </a>
+                <a href="page3.html" class="active"> Pricing </a>
+                <button class="theme-toggle" id="themeSwitcher"><i class="fas fa-palette"></i> Theme</button>
+            </div>
+        </nav>
+
+        <!-- Pricing Header -->
+        <div class="pricing-header">
+            <h1><i class="fas fa-tag"></i> Services & Pricing</h1>
+            <p>Custom solutions tailored to your needs - quality work, fair pricing</p>
+        </div>
+
+        <!-- Pricing Cards -->
+        <div class="pricing-grid">
+            <!-- Website Development -->
+            <div class="pricing-card">
+                <div class="pricing-icon">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <h2>Website Development</h2>
+                <div class="price-options">
+                    <div class="price-option">
+                        <span class="option-name">Simple Portfolio</span>
+                        <span class="option-price">$50</span>
+                    </div>
+                    <div class="price-option">
+                        <span class="option-name">Company/Group Website</span>
+                        <span class="option-price">$80</span>
+                    </div>
+                    <div class="price-option">
+                        <span class="option-name">Server Info/Company Info</span>
+                        <span class="option-price">$100</span>
+                    </div>
+                </div>
+                <p class="description">Custom websites - responsive, modern, and fully functional</p>
+                <ul class="features">
+                    <li><i class="fas fa-check"></i> Fully responsive design</li>
+                    <li><i class="fas fa-check"></i> Custom animations & effects</li>
+                    <li><i class="fas fa-check"></i> Mobile-first approach</li>
+                    <li><i class="fas fa-check"></i> 1 month free support</li>
+                </ul>
+                <button class="price-order-btn" data-service="website">
+                    <i class="fas fa-shopping-cart"></i> Order Now
+                </button>
+            </div>
+
+            <!-- Discord Bot -->
+            <div class="pricing-card">
+                <div class="pricing-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h2>Discord Bot</h2>
+                <div class="coming-soon-badge">
+                    <i class="fas fa-clock"></i> Coming Soon
+                </div>
+                <p class="description">Custom Discord bots with advanced features</p>
+                <ul class="features">
+                    <li><i class="fas fa-hourglass-half"></i> Available Soon</li>
+                    <li><i class="fas fa-star"></i> Premium features coming</li>
+                    <li><i class="fas fa-bell"></i> Notify me when ready</li>
+                </ul>
+                <button class="price-order-btn disabled" data-service="bot" disabled>
+                    <i class="fas fa-bell"></i> Notify Me
+                </button>
+            </div>
+
+            <!-- Discord Server Setup -->
+            <div class="pricing-card">
+                <div class="pricing-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h2>Discord Server Setup</h2>
+                <div class="price">
+                    <span class="currency">$</span>
+                    <span class="amount">10</span>
+                </div>
+                <p class="description">Complete server configuration & management</p>
+                <ul class="features">
+                    <li><i class="fas fa-check"></i> Roles & permissions setup</li>
+                    <li><i class="fas fa-check"></i> Verification system</li>
+                    <li><i class="fas fa-check"></i> Welcome messages & logs</li>
+                    <li><i class="fas fa-check"></i> Bot integration & setup</li>
+                    <li><i class="fas fa-check"></i> Custom server aesthetics</li>
+                </ul>
+                <button class="price-order-btn" data-service="server">
+                    <i class="fas fa-shopping-cart"></i> Order Now
+                </button>
+            </div>
+        </div>
+
+        <!-- Add-ons Section -->
+        <div class="addons-section">
+            <h2><i class="fas fa-plus-circle"></i> Discord Server Setup Add-ons</h2>
+            <div class="addons-grid">
+                <div class="addon-card">
+                    <i class="fas fa-link"></i>
+                    <h3>Webhooks</h3>
+                    <div class="addon-price">+$5</div>
+                    <p>Basic webhook integration for logs, messages, and notifications</p>
+                </div>
+                <div class="addon-card featured-addon">
+                    <i class="fas fa-image"></i>
+                    <h3>Pretty Webhooks</h3>
+                    <div class="addon-price">+$5</div>
+                    <p>Beautiful webhooks with images, embeds, custom lines and styling</p>
+                </div>
+                <div class="addon-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Security & Anti-Nuke</h3>
+                    <div class="addon-price">+$5</div>
+                    <p>Complete security setup with anti-nuke protection and raid prevention</p>
+                </div>
+            </div>
+            <div class="addons-note">
+                <i class="fas fa-info-circle"></i> Add-ons can be combined for the ultimate server setup
+            </div>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="contact-section">
+            <h2><i class="fab fa-discord"></i> Ready to work together?</h2>
+            <p>Contact me on Discord for custom quotes or any questions</p>
+            <div class="contact-buttons">
+                <a href="https://discord.com/users/692012779934056458" target="_blank" class="contact-discord">
+                    <i class="fab fa-discord"></i> Discord: miu_dreemurr
+                </a>
+            </div>
+        </div>
+
+        <!-- Back Link -->
+        <div style="text-align: center; margin: 20px 0 40px;">
+            <a href="index.html" class="back-home"><i class="fas fa-arrow-left"></i> back to home</a>
+        </div>
+
+        <footer class="footer">
+            <p><i class="fas fa-crown"></i> Miyume dev - purple realm of code & creativity</p>
+            <p style="margin-top: 10px; font-size: 0.8rem;">✦ custom pricing available | all projects include support ✦</p>
+        </footer>
+    </div>
+
+    <script src="Scripts/main.js"></script>
+    <script>
+        // Order button functionality
+        const orderBtns = document.querySelectorAll('.price-order-btn:not(.disabled)');
+        
+        orderBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const service = this.getAttribute('data-service');
+                let serviceName = '';
+                let servicePrice = '';
+                
+                switch(service) {
+                    case 'website':
+                        serviceName = 'Website Development (Portfolio/Company/Server Info)';
+                        servicePrice = '$50 - $100';
+                        break;
+                    case 'server':
+                        serviceName = 'Discord Server Setup';
+                        servicePrice = '$10 + add-ons';
+                        break;
+                }
+                
+                const message = `Hi! I'm interested in your ${serviceName} service (${servicePrice}). Can we discuss the details?`;
+                const discordUrl = `https://discord.com/users/692012779934056458`;
+                
+                // Copy to clipboard and show notification
+                navigator.clipboard.writeText(message).then(() => {
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> Copied! DM me on Discord';
+                    btn.style.background = '#23a55a';
+                    btn.style.borderColor = '#23a55a';
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.style.background = '';
+                        btn.style.borderColor = '';
+                    }, 3000);
+                    
+                    // Open Discord DM
+                    window.open(discordUrl, '_blank');
+                }).catch(() => {
+                    btn.innerHTML = '<i class="fas fa-times"></i> Failed!';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                    }, 2000);
+                });
+            });
+        });
+        
+        // Notify me button for coming soon
+        const notifyBtn = document.querySelector('.price-order-btn.disabled');
+        if (notifyBtn) {
+            notifyBtn.addEventListener('click', function() {
+                const message = `Hey! I'm interested in your Discord Bot service when it becomes available. Please notify me!`;
+                const discordUrl = `https://discord.com/users/692012779934056458`;
+                
+                navigator.clipboard.writeText(message).then(() => {
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    this.style.background = '#23a55a';
+                    this.style.borderColor = '#23a55a';
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.style.background = '';
+                        this.style.borderColor = '';
+                    }, 2000);
+                    
+                    window.open(discordUrl, '_blank');
+                });
+            });
+        }
+    </script>
+</body>
+</html>

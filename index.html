@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miyume Dev | Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Styles/main.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <a href="index.html" class="logo">
+                <i class="fas fa-star-of-life"></i> MIYUME <span style="color: var(--primary);">DEV</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="active"> Home </a>
+                <a href="page2.html"> Gallery </a>
+                <a href="page3.html"> Pricing </a>
+                <button class="theme-toggle" id="themeSwitcher"><i class="fas fa-palette"></i> Theme</button>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="dev-info">
+                <div class="dev-badge"><i class="fas fa-code"></i> full-stack · creative dev</div>
+                <h1><span style="background: linear-gradient(135deg, #c084fc, #f0abfc); -webkit-background-clip:text; background-clip:text; color:transparent;">Miyume architects </span>  experiences</h1>
+                <p class="dev-tagline">Building websites, discord bots, and immersive server ecosystems. Explore my gallery of interactive projects.</p>
+                <div class="social-links">
+                    <span class="social-badge"><i class="fab fa-discord"></i> Miu_dreemurr</span>
+                </div>
+            </div>
+
+            <!-- Discord Presence Card with Real User -->
+            <div class="discord-card">
+                <div class="discord-header">
+                    <img id="discordAvatar" class="discord-avatar" src="https://media.discordapp.net/attachments/1042520030799204443/1487931221370732765/9bdca6c7658816bc4db8c72f6656861d_6958034220176550142.png?ex=69caef6f&is=69c99def&hm=e791bcb2f83eee86cd84fc0058ce2e1362f819b1751beb1ea810585240723d12&=&format=webp&quality=lossless&width=805&height=805" alt="Discord Avatar">
+                    <div class="discord-user-info">
+                        <div class="discord-username">
+                            <span id="discordUsername">Miu_dreemurr</span>
+                            <span id="discordStatusDot" class="status-dot status-offline"></span>
+                        </div>
+                        <div class="discord-status-text" id="discordStatusText">Loading...</div>
+                    </div>
+                </div>
+                <div class="discord-activity" id="discordActivity">
+                    <i class="fas fa-spinner fa-pulse"></i> Fetching status...
+                </div>
+                <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.7rem; color: var(--text-muted);"><i class="fas fa-id-card"></i> @<span id="discordUserId">Miu_dreemurr</span></span>
+                    <button class="copy-btn" id="copyDiscordBtn"><i class="far fa-copy"></i> copy tag</button>
+                </div>
+            </div>
+        </div>
+                    <!-- Visitor Counter -->
+                <div class="visitor-counter-wrapper" id="visitorCounterWrapper">
+                    <div class="counter-icon"><i class="fas fa-eye"></i></div>
+                    <div class="counter-stats">
+                        <span class="counter-label">total views</span>
+                        <span class="counter-number" id="viewCountDisplay">0</span>
+                    </div>
+                </div>
+        <!-- Quick Intro -->
+        <div style="text-align: center; margin: 40px 0 20px;">
+            <p style="color: var(--text-muted); max-width: 700px; margin: 0 auto;">
+                <i class="fas fa-arrow-down"></i> Check out my portfolio gallery - websites, discord bots, and full discord server setups with video showcases.
+            </p>
+            <a href="page2.html" style="display: inline-block; margin-top: 25px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); padding: 12px 32px; border-radius: 40px; color: white; text-decoration: none; font-weight: 600;">
+                <i class="fas fa-images"></i> View gallery →
+            </a>
+        </div>
+
+        <footer class="footer">
+            <p><i class="fas fa-crown"></i> Miyume dev - purple realm of code & creativity</p>
+            <p style="margin-top: 10px; font-size: 0.8rem;">✦ 10 themes available ✦</p>
+        </footer>
+    </div>
+
+    <script src="Scripts/main.js"></script>
+</body>
+</html>

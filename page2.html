@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miyume Dev | Gallery</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Styles/main.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <a href="index.html" class="logo">
+                <i class="fas fa-star-of-life"></i> MIYUME <span style="color: var(--primary);">DEV</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html"> Home </a>
+                <a href="page2.html" class="active"> Gallery </a>
+                <a href="page3.html"> Pricing </a>
+                
+                <button class="theme-toggle" id="themeSwitcher"><i class="fas fa-palette"></i> Theme</button>
+            </div>
+        </nav>
+
+        <!-- Gallery Header -->
+        <div class="gallery-header">
+            <h2><i class="fas fa-play-circle"></i> Project showcase</h2>
+            <p style="color: var(--text-muted); max-width: 700px; margin: 12px auto;">websites · discord bots · discord server setups - each with video preview (YouTube)</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar" id="filterBar">
+            <button class="filter-btn active" data-filter="all"> All Projects </button>
+            <button class="filter-btn" data-filter="website"> Websites </button>
+            <button class="filter-btn" data-filter="bot"> Discord Bots </button>
+            <button class="filter-btn" data-filter="server"> Discord Servers </button>
+        </div>
+
+        <!-- Gallery Grid -->
+        <div class="gallery-grid" id="galleryGrid"></div>
+
+        <!-- Back Link -->
+        <div style="text-align: center; margin: 20px 0 40px;">
+            <a href="index.html" class="back-home"><i class="fas fa-arrow-left"></i> back to home</a>
+        </div>
+
+        <footer class="footer">
+            <p><i class="fas fa-crown"></i> miyume dev — purple realm of code & creativity</p>
+            <p style="margin-top: 10px; font-size: 0.8rem;">✦ all projects include demo videos | click watch on YouTube ✦</p>
+        </footer>
+    </div>
+
+    <script src="Scripts/main.js"></script>
+    <script>
+        // Gallery-specific data and functionality
+        const projects = [
+            {
+                id: 1, title: "BlueLabs", category: "website",
+                description: "Open source tools that help people. (sadly got shutted down)",
+                tech: ["HTML-5", "JavaScript", "CSS-4"], youtubeId: "DzDefKtV0dU", demoUrl: "https://youtu.be/DzDefKtV0dU"
+            },
+            {
+                id: 2, title: "Cooming Soon", category: "bot",
+                description: "Cooming Soon",
+                tech: ["Cooming Soon"], youtubeId: "jfKfPfyJRdk", demoUrl: "https://youtu.be/jfKfPfyJRdk"
+            },
+            {
+                id: 3, title: "Genso Wanderer (GWR)", category: "server",
+                description: "Fully configured tsb clan community server: roles, automod, ticket system, boost perks & anti nuke.",
+                tech: ["Fully Set-Up", "Anti Nuke", "TSB Clan"], youtubeId: "Ul7ogEQOWeo", demoUrl: "https://youtu.be/Ul7ogEQOWeo"
+            },
+            {
+                id: 4, title: "Portfolio 3D", category: "website",
+                description: "Immersive 3D portfolio for a modeler named: Saf. (helped a lot long time ago)",
+                tech: ["HTML-5", "JavaScript", "CSS-4"], youtubeId: "Swv9ZrZFjXI", demoUrl: "https://youtu.be/Swv9ZrZFjXI"
+            },
+            {
+                id: 5, title: "Cooming Soon", category: "bot",
+                description: "Cooming Soon",
+                tech: ["Cooming Soon"], youtubeId: "jfKfPfyJRdk", demoUrl: "https://youtu.be/jfKfPfyJRdk"
+            },
+            {
+                id: 6, title: "Gensokyo!", category: "server",
+                description: "My Current server when you can chat and purchase stuff.",
+                tech: ["Streaming", "Main Hub", "Custom Webhooks"], youtubeId: "K9DHI7kQYjo", demoUrl: "https://youtu.be/K9DHI7kQYjo"
+            },
+            {
+                id: 7, title: "Miyabi fan-website RU", category: "website",
+                description: "Russian fan hub for Miyabi with high-quality galleries, and information about her.",
+                tech: ["HTML-5", "JavaScript", "CSS-4"], youtubeId: "0XABABHbR6c", demoUrl: "https://youtu.be/0XABABHbR6c"
+            },
+            {
+                id: 8, title: "Cooming Soon", category: "bot",
+                description: "Cooming Soon",
+                tech: ["Cooming Soon"], youtubeId: "jfKfPfyJRdk", demoUrl: "https://youtu.be/jfKfPfyJRdk"
+            },
+            {
+                id: 9, title: "Girl's Garden", category: "server",
+                description: "Server Tag community server: mostly people join for tag, not to talk.",
+                tech: ["Tag Server", "3K+ Members", "Easy set-up"], youtubeId: "MUDnFX8wnMs", demoUrl: "https://youtu.be/MUDnFX8wnMs"
+            }
+        ];
+
+        let currentFilter = "all";
+
+        function getYoutubeEmbed(youtubeId) {
+            return `https://www.youtube.com/embed/${youtubeId}?autoplay=0&modestbranding=1&rel=0`;
+        }
+
+        function renderGallery() {
+            const container = document.getElementById("galleryGrid");
+            if (!container) return;
+            const filtered = currentFilter === "all" ? projects : projects.filter(p => p.category === currentFilter);
+            if (filtered.length === 0) {
+                container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding: 60px;"><i class="fas fa-folder-open fa-3x" style="opacity:0.5;"></i><p>no projects in this category yet</p></div>`;
+                return;
+            }
+            container.innerHTML = filtered.map(proj => `
+                <div class="project-card">
+                    <div class="video-wrapper">
+                        <iframe src="${getYoutubeEmbed(proj.youtubeId)}" title="${proj.title} preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="card-content">
+                        <h3><i class="fas ${proj.category === 'website' ? 'fa-globe' : (proj.category === 'bot' ? 'fa-robot' : 'fa-users')}"></i> ${proj.title}</h3>
+                        <p>${proj.description}</p>
+                        <div class="tech-stack">
+                            ${proj.tech.map(t => `<span class="tech-badge">${t}</span>`).join('')}
+                        </div>
+                        <div class="card-footer">
+                            <span class="project-type">${proj.category === 'website' ? 'Website' : (proj.category === 'bot' ? 'Discord bot' : 'Discord server')}</span>
+                            <a href="${proj.demoUrl}" target="_blank" class="yt-link"><i class="fab fa-youtube"></i> Watch on YouTube</a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupFilters() {
+            const filterBtns = document.querySelectorAll(".filter-btn");
+            filterBtns.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    filterBtns.forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+                    currentFilter = btn.getAttribute("data-filter");
+                    renderGallery();
+                });
+            });
+        }
+
+        renderGallery();
+        setupFilters();
+    </script>
+</body>
+</html>
