@@ -199,42 +199,12 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Miyume Dev - Ready with custom Discord status!');
 });
     // ========== VISITOR VIEW COUNTER ==========
-     // ========== GLOBAL VIEW COUNTER (Fully Synced) ==========
-    
-    let globalCount = 848; // Starting number
-    
-    async function updateGlobalViewCounter() {
-        const viewDisplay = document.getElementById('viewCountDisplay');
-        if (!viewDisplay) return;
-        
-        const deviceCounted = localStorage.getItem('miyume_device_counted');
-        
-        // Try to get latest count from API
-        try {
-            const response = await fetch('https://api.countapi.xyz/get/miyume-portfolio/visits');
-            const data = await response.json();
-            
-            if (data && data.value) {
-                globalCount = data.value;
-                localStorage.setItem('miyume_global_count', globalCount);
-            }
-        } catch (e) {
-            // API failed, use stored count
-            const stored = localStorage.getItem('miyume_global_count');
-            if (stored) globalCount = parseInt(stored);
-        }
-        
-        // Increment if new device
-        if (!deviceCounted) {
-            globalCount++;
-            localStorage.setItem('miyume_global_count', globalCount);
-            localStorage.setItem('miyume_device_counted', 'true');
-            
-            // Try to update API in background
-            fetch('https://api.countapi.xyz/update/miyume-portfolio/visits/?amount=1').catch(() => {});
-        }
-        
-        viewDisplay.textContent = globalCount.toLocaleString();
-    }
-    
-    updateGlobalViewCounter();
+    fetch('https://api.countapi.xyz/hit/miyume/views')
+        .then(res => res.json())
+        .then(data => {
+            const count = data.value;
+            document.getElementById('viewCountDisplay').innerText = count.toLocaleString();
+        })
+        .catch(() => {
+            document.getElementById('viewCountDisplay').innerText = '1,234';
+        });
