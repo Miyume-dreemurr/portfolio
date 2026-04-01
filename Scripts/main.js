@@ -202,32 +202,20 @@ document.addEventListener('DOMContentLoaded', function() {
 const BIN_ID = '69cdae5636566621a86ef47d';
 const API_KEY = '$2a$10$Lm70n4XiSLFnhJJY5UVqV.P/DnDAPEGMxI.k8EsW5t3KzWzX4voNi';
 
-// Function to update ONLY the view counter
+// Function to find and update the view counter
 function updateDisplay(count) {
-    // Look for any element that contains "total views" in its text
-    const bodyText = document.body.innerText;
-    if (bodyText.includes('total views')) {
-        // Find all text nodes and update the specific one
-        const walker = document.createTreeWalker(
-            document.body,
-            NodeFilter.SHOW_TEXT,
-            {
-                acceptNode: function(node) {
-                    if (node.textContent.includes('total views')) {
-                        return NodeFilter.FILTER_ACCEPT;
-                    }
-                    return NodeFilter.FILTER_SKIP;
-                }
-            }
-        );
-        
-        const textNode = walker.nextNode();
-        if (textNode) {
-            textNode.textContent = textNode.textContent.replace(/\d+/, count);
+    // Find all paragraph elements
+    const paragraphs = document.querySelectorAll('p');
+    
+    for (let p of paragraphs) {
+        // Check if this paragraph contains "total views"
+        if (p.textContent.includes('total views')) {
+            // Update just the number
+            p.innerHTML = p.innerHTML.replace(/\d+/, count);
+            console.log(`Updated views to: ${count}`);
+            break;
         }
     }
-    
-    console.log(`Global views: ${count}`);
 }
 
 // Main function to increment global counter
@@ -235,9 +223,7 @@ async function incrementGlobalCounter() {
     try {
         // Get current count
         const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-            headers: {
-                'X-Master-Key': API_KEY
-            }
+            headers: { 'X-Master-Key': API_KEY }
         });
         const data = await getResponse.json();
         let currentCount = data.record.views || 0;
@@ -260,9 +246,8 @@ async function incrementGlobalCounter() {
         
     } catch (error) {
         console.error('Counter error:', error);
-        // Fallback to localStorage if API fails
-        let fallback = localStorage.getItem('fallback_views') || 0;
-        fallback = parseInt(fallback) + 1;
+        // Fallback
+        let fallback = parseInt(localStorage.getItem('fallback_views') || 0) + 1;
         localStorage.setItem('fallback_views', fallback);
         updateDisplay(fallback);
     }
@@ -283,18 +268,8 @@ async function displayCurrentCount() {
     }
 }
 
-// Run counter after page loads
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-        const hasVisited = sessionStorage.getItem('global_visited');
-        if (!hasVisited) {
-            incrementGlobalCounter();
-            sessionStorage.setItem('global_visited', 'true');
-        } else {
-            displayCurrentCount();
-        }
-    });
-} else {
+// Wait for page to load then run counter
+window.addEventListener('load', function() {
     const hasVisited = sessionStorage.getItem('global_visited');
     if (!hasVisited) {
         incrementGlobalCounter();
@@ -302,4 +277,4 @@ if (document.readyState === 'loading') {
     } else {
         displayCurrentCount();
     }
-}
+});
