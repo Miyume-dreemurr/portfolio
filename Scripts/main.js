@@ -199,38 +199,32 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Miyume Dev - Ready with custom Discord status!');
 });
     // ========== VISITOR VIEW COUNTER ==========
-    const VIEW_COUNT_KEY = 'miyume_site_views';
-    
-    function getViewCount() {
-        let count = localStorage.getItem(VIEW_COUNT_KEY);
-        if (count === null) {
-            count = 0;
-        } else {
-            count = parseInt(count, 10);
-        }
-        return count;
-    }
-    
-    function incrementViewCount() {
-        const sessionFlag = sessionStorage.getItem('miyume_view_counted');
-        
-        if (!sessionFlag) {
-            let currentCount = getViewCount();
-            currentCount++;
-            localStorage.setItem(VIEW_COUNT_KEY, currentCount);
-            sessionStorage.setItem('miyume_view_counted', 'true');
-            return currentCount;
-        }
-        
-        return getViewCount();
-    }
-    
-    function updateViewCounterDisplay() {
+ async function updateGlobalViewCounter() {
         const viewDisplay = document.getElementById('viewCountDisplay');
-        if (viewDisplay) {
-            const count = incrementViewCount();
+        if (!viewDisplay) return;
+        
+        const repo = 'miyume-dreemurr/portfolio';
+        const sessionCounted = sessionStorage.getItem('miyume_view_counted');
+        
+        try {
+            let url;
+            
+            if (!sessionCounted) {
+                url = `https://githits.vercel.app/api/count?repo=${repo}&increment=true`;
+                sessionStorage.setItem('miyume_view_counted', 'true');
+            } else {
+                url = `https://githits.vercel.app/api/count?repo=${repo}`;
+            }
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            const count = data.count || data.views || 0;
             viewDisplay.textContent = count.toLocaleString();
+            
+        } catch (error) {
+            console.error('View counter error:', error);
+            viewDisplay.textContent = '✨';
         }
     }
     
-    updateViewCounterDisplay();
+    updateGlobalViewCounter();
