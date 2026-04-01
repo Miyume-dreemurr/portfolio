@@ -199,77 +199,42 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Miyume Dev - Ready with custom Discord status!');
 });
     // ========== VISITOR VIEW COUNTER ==========
-  async function updateGlobalViewCounter() {
+     // ========== GLOBAL VIEW COUNTER (Fully Synced) ==========
+    
+    let globalCount = 848; // Starting number
+    
+    async function updateGlobalViewCounter() {
         const viewDisplay = document.getElementById('viewCountDisplay');
         if (!viewDisplay) return;
         
-        // Show loading state
-        viewDisplay.textContent = '...';
-        
-        // Check if this device/session has been counted
         const deviceCounted = localStorage.getItem('miyume_device_counted');
-        const sessionCounted = sessionStorage.getItem('miyume_session_counted');
         
+        // Try to get latest count from API
         try {
-            let response;
-            
-            // Only increment if this device has NEVER been counted before
-            if (!deviceCounted) {
-                // New device! Increment global counter
-                response = await fetch('https://api.countapi.xyz/update/miyume-portfolio/visits/?amount=1');
-                localStorage.setItem('miyume_device_counted', 'true');
-                sessionStorage.setItem('miyume_session_counted', 'true');
-            } else {
-                // Already counted device - just get current count
-                response = await fetch('https://api.countapi.xyz/get/miyume-portfolio/visits');
-            }
-            
+            const response = await fetch('https://api.countapi.xyz/get/miyume-portfolio/visits');
             const data = await response.json();
-            const count = data.value;
             
-            // Update display
-            viewDisplay.textContent = count.toLocaleString();
-            
-            // Store the real global count
-            localStorage.setItem('miyume_real_count', count);
-            
-        } catch (error) {
-            console.log('API error, using fallback');
-            
-            // Use the REAL global count from localStorage if available
-            let realCount = localStorage.getItem('miyume_real_count');
-            
-            if (!realCount) {
-                // First time ever on this device
-                realCount = 848;
-                localStorage.setItem('miyume_real_count', realCount);
-            } else {
-                realCount = parseInt(realCount);
+            if (data && data.value) {
+                globalCount = data.value;
+                localStorage.setItem('miyume_global_count', globalCount);
             }
-            
-            // Check if this device needs to be counted
-            if (!localStorage.getItem('miyume_device_counted')) {
-                // This device hasn't been counted yet - increment the global count
-                realCount++;
-                localStorage.setItem('miyume_real_count', realCount);
-                localStorage.setItem('miyume_device_counted', 'true');
-            }
-            
-            viewDisplay.textContent = realCount.toLocaleString();
+        } catch (e) {
+            // API failed, use stored count
+            const stored = localStorage.getItem('miyume_global_count');
+            if (stored) globalCount = parseInt(stored);
         }
+        
+        // Increment if new device
+        if (!deviceCounted) {
+            globalCount++;
+            localStorage.setItem('miyume_global_count', globalCount);
+            localStorage.setItem('miyume_device_counted', 'true');
+            
+            // Try to update API in background
+            fetch('https://api.countapi.xyz/update/miyume-portfolio/visits/?amount=1').catch(() => {});
+        }
+        
+        viewDisplay.textContent = globalCount.toLocaleString();
     }
     
-    // Run on every page load
     updateGlobalViewCounter();
-    
-    // When phone comes online, sync with real API
-    window.addEventListener('online', function() {
-        updateGlobalViewCounter();
-    });
-    
-    // Also sync when page becomes visible again
-    document.addEventListener('visibilitychange', function() {
-        if (!document.hidden) {
-            updateGlobalViewCounter();
-        }
-    });
