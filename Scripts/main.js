@@ -202,19 +202,12 @@ document.addEventListener('DOMContentLoaded', function() {
 const BIN_ID = '69cdae5636566621a86ef47d';
 const API_KEY = '$2a$10$Lm70n4XiSLFnhJJY5UVqV.P/DnDAPEGMxI.k8EsW5t3KzWzX4voNi';
 
-// Function to find and update the view counter
+// Function to update the view counter display
 function updateDisplay(count) {
-    // Find all paragraph elements
-    const paragraphs = document.querySelectorAll('p');
-    
-    for (let p of paragraphs) {
-        // Check if this paragraph contains "total views"
-        if (p.textContent.includes('total views')) {
-            // Update just the number
-            p.innerHTML = p.innerHTML.replace(/\d+/, count);
-            console.log(`Updated views to: ${count}`);
-            break;
-        }
+    const counterElement = document.getElementById('viewCountDisplay');
+    if (counterElement) {
+        counterElement.textContent = count;
+        console.log(`Updated views to: ${count}`);
     }
 }
 
@@ -223,7 +216,9 @@ async function incrementGlobalCounter() {
     try {
         // Get current count
         const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-            headers: { 'X-Master-Key': API_KEY }
+            headers: {
+                'X-Master-Key': API_KEY
+            }
         });
         const data = await getResponse.json();
         let currentCount = data.record.views || 0;
@@ -246,14 +241,14 @@ async function incrementGlobalCounter() {
         
     } catch (error) {
         console.error('Counter error:', error);
-        // Fallback
+        // Fallback to localStorage if API fails
         let fallback = parseInt(localStorage.getItem('fallback_views') || 0) + 1;
         localStorage.setItem('fallback_views', fallback);
         updateDisplay(fallback);
     }
 }
 
-// Function to just fetch and display current count
+// Function to just fetch and display current count (without incrementing)
 async function displayCurrentCount() {
     try {
         const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
