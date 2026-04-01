@@ -204,34 +204,31 @@ const API_KEY = '$2a$10$Lm70n4XiSLFnhJJY5UVqV.P/DnDAPEGMxI.k8EsW5t3KzWzX4voNi';
 
 // Function to update ONLY the view counter
 function updateDisplay(count) {
-    // Find the exact element that contains "total views"
-    const elements = document.querySelectorAll('p, div, span, h1, h2, h3, h4, h5, h6');
-    
-    for (let element of elements) {
-        // Check if this element contains "total views" AND is likely the counter
-        if (element.textContent && element.textContent.includes('total views')) {
-            // Only modify if it's exactly "total views X" or similar
-            const originalText = element.textContent;
-            if (originalText.match(/total views \d+/)) {
-                element.textContent = originalText.replace(/\d+/, count);
-                break;
+    // Look for any element that contains "total views" in its text
+    const bodyText = document.body.innerText;
+    if (bodyText.includes('total views')) {
+        // Find all text nodes and update the specific one
+        const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            {
+                acceptNode: function(node) {
+                    if (node.textContent.includes('total views')) {
+                        return NodeFilter.FILTER_ACCEPT;
+                    }
+                    return NodeFilter.FILTER_SKIP;
+                }
             }
+        );
+        
+        const textNode = walker.nextNode();
+        if (textNode) {
+            textNode.textContent = textNode.textContent.replace(/\d+/, count);
         }
     }
     
     console.log(`Global views: ${count}`);
 }
-
-// Alternative: Target by class if you know the class name
-// If your counter has a specific class like "view-count", use this instead:
-/*
-function updateDisplay(count) {
-    const counterElement = document.querySelector('.view-count, .total-views, [class*="view"]');
-    if (counterElement) {
-        counterElement.textContent = counterElement.textContent.replace(/\d+/, count);
-    }
-}
-*/
 
 // Main function to increment global counter
 async function incrementGlobalCounter() {
@@ -286,12 +283,23 @@ async function displayCurrentCount() {
     }
 }
 
-// Check if this is a new session
-const hasVisited = sessionStorage.getItem('global_visited');
-
-if (!hasVisited) {
-    incrementGlobalCounter();
-    sessionStorage.setItem('global_visited', 'true');
+// Run counter after page loads
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        const hasVisited = sessionStorage.getItem('global_visited');
+        if (!hasVisited) {
+            incrementGlobalCounter();
+            sessionStorage.setItem('global_visited', 'true');
+        } else {
+            displayCurrentCount();
+        }
+    });
 } else {
-    displayCurrentCount();
+    const hasVisited = sessionStorage.getItem('global_visited');
+    if (!hasVisited) {
+        incrementGlobalCounter();
+        sessionStorage.setItem('global_visited', 'true');
+    } else {
+        displayCurrentCount();
+    }
 }
