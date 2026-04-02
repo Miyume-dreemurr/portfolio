@@ -201,75 +201,57 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========== VISITOR VIEW COUNTER ==========
 const BIN_ID = '69cdae5636566621a86ef47d';
 const API_KEY = '$2a$10$Lm70n4XiSLFnhJJY5UVqV.P/DnDAPEGMxI.k8EsW5t3KzWzX4voNi';
-
-// Function to update the view counter display
-function updateDisplay(count) {
-    const counterElement = document.getElementById('viewCountDisplay');
-    if (counterElement) {
-        counterElement.textContent = count;
-        console.log(`Updated views to: ${count}`);
+async function updateViewCount() {
+    // Check if this session has already counted a view
+    const hasViewed = sessionStorage.getItem('hasViewed');
+    if (hasViewed) {
+        // Just display current count without incrementing
+        displayCurrentCount();
+        return;
     }
-}
-
-// Main function to increment global counter
-async function incrementGlobalCounter() {
+    
     try {
-        // Get current count
         const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-            headers: {
-                'X-Master-Key': API_KEY
-            }
+            headers: { 'X-Master-Key': API_KEY }
         });
+        
         const data = await getResponse.json();
         let currentCount = data.record.views || 0;
+        currentCount++;
         
-        // Increment count
-        const newCount = currentCount + 1;
-        
-        // Update the bin
         await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'X-Master-Key': API_KEY
             },
-            body: JSON.stringify({ views: newCount })
+            body: JSON.stringify({ views: currentCount })
         });
         
-        // Update display
-        updateDisplay(newCount);
-        
+        updateDisplay(currentCount);
+        sessionStorage.setItem('hasViewed', 'true');
     } catch (error) {
-        console.error('Counter error:', error);
-        // Fallback to localStorage if API fails
-        let fallback = parseInt(localStorage.getItem('fallback_views') || 0) + 1;
-        localStorage.setItem('fallback_views', fallback);
-        updateDisplay(fallback);
+        console.error('Error updating view count:', error);
     }
 }
 
-// Function to just fetch and display current count (without incrementing)
 async function displayCurrentCount() {
     try {
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+        const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
             headers: { 'X-Master-Key': API_KEY }
         });
-        const data = await response.json();
+        const data = await getResponse.json();
         updateDisplay(data.record.views || 0);
     } catch (error) {
-        console.error('Failed to fetch count:', error);
-        const fallback = localStorage.getItem('fallback_views') || 0;
-        updateDisplay(fallback);
+        console.error('Error fetching view count:', error);
     }
 }
 
-// Wait for page to load then run counter
-window.addEventListener('load', function() {
-    const hasVisited = sessionStorage.getItem('global_visited');
-    if (!hasVisited) {
-        incrementGlobalCounter();
-        sessionStorage.setItem('global_visited', 'true');
-    } else {
-        displayCurrentCount();
+function updateDisplay(count) {
+    const viewsElement = Array.from(document.querySelectorAll('*')).find(
+        el => el.textContent.includes('total views')
+    );
+    if (viewsElement) {
+        viewsElement.textContent = `total views ${count}`;
     }
-});
+}
