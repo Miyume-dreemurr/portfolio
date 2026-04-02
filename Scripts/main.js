@@ -201,57 +201,298 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========== VISITOR VIEW COUNTER ==========
 const BIN_ID = '69cdae5636566621a86ef47d';
 const API_KEY = '$2a$10$Lm70n4XiSLFnhJJY5UVqV.P/DnDAPEGMxI.k8EsW5t3KzWzX4voNi';
-async function updateViewCount() {
-    // Check if this session has already counted a view
-    const hasViewed = sessionStorage.getItem('hasViewed');
-    if (hasViewed) {
-        // Just display current count without incrementing
-        displayCurrentCount();
-        return;
+
+// Configuration
+const CONFIG = {
+    retryAttempts: 3,
+    retryDelay: 2000,
+    cacheDuration: 30000, // Cache count for 30 seconds
+    sessionKey: 'portfolio_view_counted_v2',
+    cacheKey: 'portfolio_view_count_cache'
+};
+
+class ViewCounter {
+    constructor() {
+        this.currentCount = 0;
+        this.isUpdating = false;
+        this.viewsElement = null;
+        this.init();
     }
-    
-    try {
-        const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-            headers: { 'X-Master-Key': API_KEY }
-        });
+
+    async init() {
+        // Find the views display element
+        this.findViewsElement();
         
-        const data = await getResponse.json();
-        let currentCount = data.record.views || 0;
-        currentCount++;
+        if (!this.viewsElement) {
+            console.warn('Views element not found, will retry...');
+            setTimeout(() => this.init(), 1000);
+            return;
+        }
+
+        // Load cached count first for immediate display
+        this.loadCachedCount();
         
-        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': API_KEY
-            },
-            body: JSON.stringify({ views: currentCount })
-        });
+        // Then fetch and update from server
+        await this.updateViewCount();
+    }
+
+    findViewsElement() {
+        // Try multiple methods to find the views element
+        const selectors = [
+            () => Array.from(document.querySelectorAll('*')).find(el => 
+                el.textContent && el.textContent.trim().match(/total views \d+/)
+            ),
+            () => document.querySelector('.view-counter'),
+            () => {
+                // Create element if it doesn't exist
+                const container = document.querySelector('footer, .footer, .stats, .info');
+                if (container && !document.querySelector('.global-view-count')) {
+                    const newElement = document.createElement('div');
+                    newElement.className = 'global-view-count';
+                    newElement.style.margin = '10px 0';
+                    newElement.style.fontSize = '14px';
+                    newElement.style.opacity = '0.8';
+                    container.appendChild(newElement);
+                    return newElement;
+                }
+                return null;
+            }
+        ];
+
+        for (const selector of selectors) {
+            const element = selector();
+            if (element) {
+                this.viewsElement = element;
+                if (!element.classList.contains('global-view-count')) {
+                    element.classList.add('view-counter');
+                }
+                break;
+            }
+        }
+    }
+
+    loadCachedCount() {
+        try {
+            const cached = localStorage.getItem(CONFIG.cacheKey);
+            if (cached) {
+                const { count, timestamp } = JSON.parse(cached);
+                const isRecent = (Date.now() - timestamp) < CONFIG.cacheDuration;
+                if (isRecent && count !== undefined) {
+                    this.currentCount = count;
+                    this.updateDisplay();
+                }
+            }
+        } catch (e) {
+            console.debug('Cache read error:', e);
+        }
+    }
+
+    saveToCache(count) {
+        try {
+            localStorage.setItem(CONFIG.cacheKey, JSON.stringify({
+                count: count,
+                timestamp: Date.now()
+            }));
+        } catch (e) {
+            console.debug('Cache save error:', e);
+        }
+    }
+
+    async updateViewCount(retryCount = 0) {
+        if (this.isUpdating) return;
+        this.isUpdating = true;
+
+        try {
+            // Check if this session already counted
+            const hasCounted = sessionStorage.getItem(CONFIG.sessionKey);
+            
+            // Fetch current count with timeout
+            const currentCount = await this.fetchCurrentCount();
+            
+            let newCount = currentCount;
+            
+            // Only increment if not counted in this session
+            if (!hasCounted) {
+                newCount = currentCount + 1;
+                
+                // Update the server
+                const updateSuccess = await this.updateServerCount(newCount);
+                
+                if (updateSuccess) {
+                    // Mark this session as counted
+                    sessionStorage.setItem(CONFIG.sessionKey, Date.now().toString());
+                    
+                    // Add to local history to prevent multiple counts from same device
+                    this.recordDeviceView();
+                }
+            }
+            
+            // Update local state and display
+            this.currentCount = newCount;
+            this.updateDisplay();
+            this.saveToCache(newCount);
+            
+            // Dispatch event for other components
+            window.dispatchEvent(new CustomEvent('viewCountUpdated', {
+                detail: { count: newCount }
+            }));
+            
+        } catch (error) {
+            console.error('View counter error:', error);
+            
+            // Retry logic
+            if (retryCount < CONFIG.retryAttempts) {
+                console.log(`Retrying... (${retryCount + 1}/${CONFIG.retryAttempts})`);
+                setTimeout(() => {
+                    this.updateViewCount(retryCount + 1);
+                }, CONFIG.retryDelay * (retryCount + 1));
+            } else {
+                // Show fallback
+                if (this.viewsElement && !this.viewsElement.textContent.includes('views')) {
+                    this.viewsElement.textContent = 'total views ●●●';
+                }
+            }
+        } finally {
+            this.isUpdating = false;
+        }
+    }
+
+    async fetchCurrentCount() {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
         
-        updateDisplay(currentCount);
-        sessionStorage.setItem('hasViewed', 'true');
-    } catch (error) {
-        console.error('Error updating view count:', error);
+        try {
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                headers: {
+                    'X-Master-Key': API_KEY,
+                    'Content-Type': 'application/json'
+                },
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // Handle different response structures
+            let views = data.record?.views ?? data.views ?? 0;
+            
+            // Ensure it's a number
+            return parseInt(views, 10) || 0;
+            
+        } catch (error) {
+            clearTimeout(timeoutId);
+            throw error;
+        }
+    }
+
+    async updateServerCount(newCount) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        
+        try {
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': API_KEY
+                },
+                body: JSON.stringify({ views: newCount }),
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`Update failed: ${response.status}`);
+            }
+            
+            return true;
+            
+        } catch (error) {
+            clearTimeout(timeoutId);
+            throw error;
+        }
+    }
+
+    recordDeviceView() {
+        // Store device info to prevent multiple counts from same device
+        const deviceKey = 'device_viewed_' + this.getDeviceId();
+        if (!localStorage.getItem(deviceKey)) {
+            localStorage.setItem(deviceKey, Date.now().toString());
+        }
+    }
+
+    getDeviceId() {
+        // Create a simple device fingerprint
+        const screen = `${screen.width}x${screen.height}`;
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const language = navigator.language;
+        
+        let id = `${screen}_${timezone}_${language}`;
+        
+        // Simple hash
+        let hash = 0;
+        for (let i = 0; i < id.length; i++) {
+            hash = ((hash << 5) - hash) + id.charCodeAt(i);
+            hash |= 0;
+        }
+        
+        return Math.abs(hash).toString(36);
+    }
+
+    updateDisplay() {
+        if (!this.viewsElement) return;
+        
+        const text = `total views ${this.currentCount.toLocaleString()}`;
+        
+        // Only update if changed
+        if (this.viewsElement.textContent !== text) {
+            this.viewsElement.textContent = text;
+            
+            // Add visual feedback for the update
+            this.viewsElement.style.transition = 'opacity 0.3s';
+            this.viewsElement.style.opacity = '0.7';
+            setTimeout(() => {
+                this.viewsElement.style.opacity = '1';
+            }, 300);
+        }
+    }
+
+    // Public method to force refresh
+    async refresh() {
+        sessionStorage.removeItem(CONFIG.sessionKey);
+        await this.updateViewCount();
     }
 }
 
-async function displayCurrentCount() {
-    try {
-        const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-            headers: { 'X-Master-Key': API_KEY }
+// Initialize when page is ready
+let viewCounter;
+
+function initViewCounter() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            viewCounter = new ViewCounter();
         });
-        const data = await getResponse.json();
-        updateDisplay(data.record.views || 0);
-    } catch (error) {
-        console.error('Error fetching view count:', error);
+    } else {
+        viewCounter = new ViewCounter();
     }
 }
 
-function updateDisplay(count) {
-    const viewsElement = Array.from(document.querySelectorAll('*')).find(
-        el => el.textContent.includes('total views')
-    );
-    if (viewsElement) {
-        viewsElement.textContent = `total views ${count}`;
+// Handle page visibility changes (when user returns to tab)
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && viewCounter) {
+        // Refresh count when user returns to tab
+        setTimeout(() => viewCounter.refresh(), 1000);
     }
-}
+});
+
+// Start the counter
+initViewCounter();
+
+// Expose for debugging (optional)
+window.viewCounter = viewCounter;
