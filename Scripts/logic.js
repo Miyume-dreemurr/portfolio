@@ -55,78 +55,53 @@ const projects = [
         description: "A test that helps you find out what percentage tsundere you are.",
         tech: ["Luau", "Test", "DataStore"],
         robloxGameUrl: "https://www.roblox.com/games/129188551130231/Tsundere-Test",
-        robloxImageId: "74277468576293"  // 👈 PUT ROBLOX IMAGE ASSET ID HERE
+        imgFile: "tsundere.png"
     },
     {      
         id: 12, title: "Undertale Character Test", category: "lua",       
         description: "A test that helps you find out which Undertale character you are.",       
         tech: ["Luau", "Test", "DataStore"],
         robloxGameUrl: "https://www.roblox.com/games/89692299507101/Undertale-Character-Test",
-        robloxImageId: "133140859567385"  // 👈 PUT ROBLOX IMAGE ASSET ID HERE
+        imgFile: "undertale.png"
     },
     {
         id: 13, title: "Items Buying", category: "lua",
         description: "A game where buying items returns 30% of the price back to you. Must own group or have a game on the alt.",
         tech: ["Luau", "Items Buying", "30% Robux Returning"],
         robloxGameUrl: "https://www.roblox.com/games/103453983120755/Items-Buying",
-        robloxImageId: "119301389780100"  // 👈 PUT ROBLOX IMAGE ASSET ID HERE
+        imgFile: "items.png" 
     },
     {      
         id: 14, title: "Femboy Test", category: "lua",       
         description: "A test that helps you find out what percentage femboy you are.",       
         tech: ["Luau", "Test", "DataStore"],
         robloxGameUrl: "https://www.roblox.com/games/71970631225789/Femboy-Test",
-        robloxImageId: "78150098036480"  // 👈 PUT ROBLOX IMAGE ASSET ID HERE
+        imgFile: "femboy.png"
     },
     {      
         id: 15, title: "Tomboy Test", category: "lua",       
         description: "A test that helps you find out what percentage tomboy you are.",       
         tech: ["Luau", "Test", "DataStore"],
         robloxGameUrl: "https://www.roblox.com/games/107010079658369/Tomboy-Test",
-        robloxImageId: "93511919759825"  // 👈 PUT ROBLOX IMAGE ASSET ID HERE
+        imgFile: "tomboy.png"
     },
     {      
         id: 16, title: "Neko Test", category: "lua",       
         description: "A test that helps you find out what percentage neko you are.",       
         tech: ["Luau", "Test", "DataStore"],
         robloxGameUrl: "https://www.roblox.com/games/70733746170955/Neko-Test",
-        robloxImageId: "134872114907075"  // 👈 PUT ROBLOX IMAGE ASSET ID HERE
+        imgFile: "neko.png"
     },
     {      
         id: 17, title: "Furry Test", category: "lua",       
         description: "A test that helps you find out what percentage furry you are.",       
         tech: ["Luau", "Test", "DataStore"],
         robloxGameUrl: "https://www.roblox.com/games/72559245507974/Furry-Test",
-        robloxImageId: "108593337631522"  // 👈 PUT ROBLOX IMAGE ASSET ID HERE
+        imgFile: "furry.png"
     }
 ];
 
 let currentFilter = "all";
-
-// Convert Roblox asset ID to image URL
-function getRobloxImageUrl(imageId) {
-    if (!imageId) return null;
-    // Roblox thumbnail service - works for any asset ID
-    return `https://thumbnails.roblox.com/v1/assets?assetIds=${imageId}&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false`;
-}
-
-// Fetch image URL from asset ID
-async function fetchRobloxImageUrl(imageId) {
-    if (!imageId) return null;
-    
-    try {
-        const response = await fetch(getRobloxImageUrl(imageId));
-        const data = await response.json();
-        if (data && data.data && data.data[0] && data.data[0].imageUrl) {
-            return data.data[0].imageUrl;
-        }
-    } catch (error) {
-        console.warn("Could not fetch Roblox image:", error);
-    }
-    
-    // Fallback: direct CDN
-    return `https://tr.rbxcdn.com/${imageId}/150/150/Image/Png`;
-}
 
 function renderGallery() {
     const container = document.getElementById("galleryGrid");
@@ -156,15 +131,17 @@ function renderGallery() {
             categoryLabel = 'Roblox Game';
         }
         
-        // For Lua/Roblox projects: show game icon from asset ID
+        // For Lua/Roblox projects: show image from /images folder
         if (proj.category === 'lua') {
-            const imgId = `robloxImg-${proj.id}`;
+            const imagePath = proj.imgFile ? `images/${proj.imgFile}` : 'images/placeholder.png';
             const placeholderImg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 24 24' fill='%23666'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15h-2v-2h2v2zm0-4h-2V7h2v6z'/%3E%3C/svg%3E";
             
             return `
                 <div class="project-card">
                     <div class="roblox-icon-container">
-                        <img id="${imgId}" class="roblox-game-icon" src="${placeholderImg}" style="width:100%; height:200px; object-fit:cover; border-radius:12px; background:#1a1c2a;">
+                        <img class="roblox-game-icon" src="${imagePath}" 
+                             style="width:100%; height:200px; object-fit:cover; border-radius:12px; background:#1a1c2a;"
+                             onerror="this.src='${placeholderImg}'">
                     </div>
                     <div class="card-content">
                         <h3><i class="fas ${categoryIcon}"></i> ${proj.title}</h3>
@@ -175,7 +152,7 @@ function renderGallery() {
                         <div class="card-footer">
                             <span class="project-type"><i class="fas ${categoryIcon}"></i> ${categoryLabel}</span>
                             <a href="${proj.robloxGameUrl}" target="_blank" class="roblox-btn" rel="noopener noreferrer">
-                                <i class="fab fa-roblox"></i> Play on Roblox
+                                <i class="fas fa-play"></i> Play on Roblox
                             </a>
                         </div>
                     </div>
@@ -203,19 +180,6 @@ function renderGallery() {
             </div>
         `;
     }).join('');
-    
-    // Fetch and set Roblox images for all Lua projects
-    filtered.forEach(async (proj) => {
-        if (proj.category === 'lua' && proj.robloxImageId) {
-            const imgElement = document.getElementById(`robloxImg-${proj.id}`);
-            if (imgElement) {
-                const imageUrl = await fetchRobloxImageUrl(proj.robloxImageId);
-                if (imageUrl) {
-                    imgElement.src = imageUrl;
-                }
-            }
-        }
-    });
 }
 
 function setupFilters() {
