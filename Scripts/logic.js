@@ -21,7 +21,7 @@ const projects = [
         tech: ["HTML-5", "JavaScript", "CSS-4"], youtubeId: "Swv9ZrZFjXI", demoUrl: "https://youtu.be/Swv9ZrZFjXI"
     },
     {
-        id: 5, title: "Aah bot", category: "bot",
+        id: 5, title: "Aha bot", category: "bot",
         description: "Your average community bot, easy to set up and use, 1 bot, multiple functions. no need to add more. Join server to test",
         tech: ["Moderation, Anti Raid, Fun"], youtubeId: "jfKfPfyJRdk", demoUrl: "https://youtu.be/jfKfPfyJRdk"
     },
