@@ -6,9 +6,9 @@ const projects = [
         tech: ["HTML-5", "JavaScript", "CSS-4"], youtubeId: "DzDefKtV0dU", demoUrl: "https://youtu.be/DzDefKtV0dU"
     },
     {
-        id: 2, title: "Cooming Soon", category: "bot",
-        description: "Cooming Soon",
-        tech: ["Cooming Soon"], youtubeId: "jfKfPfyJRdk", demoUrl: "https://youtu.be/jfKfPfyJRdk"
+        id: 2, title: "TSB Raid bot", category: "bot",
+        description: "Bot that helps start clan raids, give people time and track raods. Join my server to check it out yourself.",
+        tech: ["Easy, Phyton, Discord"], youtubeId: "jfKfPfyJRdk", demoUrl: "https://youtu.be/jfKfPfyJRdk"
     },
     {
         id: 3, title: "Genso Wanderer (GWR)", category: "server",
@@ -21,9 +21,9 @@ const projects = [
         tech: ["HTML-5", "JavaScript", "CSS-4"], youtubeId: "Swv9ZrZFjXI", demoUrl: "https://youtu.be/Swv9ZrZFjXI"
     },
     {
-        id: 5, title: "Cooming Soon", category: "bot",
-        description: "Cooming Soon",
-        tech: ["Cooming Soon"], youtubeId: "jfKfPfyJRdk", demoUrl: "https://youtu.be/jfKfPfyJRdk"
+        id: 5, title: "Aah bot", category: "bot",
+        description: "Your average community bot, easy to set up and use, 1 bot, multiple functions. no need to add more. Join server to test",
+        tech: ["Moderation, Anti Raid, Fun"], youtubeId: "jfKfPfyJRdk", demoUrl: "https://youtu.be/jfKfPfyJRdk"
     },
     {
         id: 6, title: "Gensokyo!", category: "server",
